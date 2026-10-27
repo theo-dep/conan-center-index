@@ -61,6 +61,7 @@ Prefix = {path}""")
                 if not is_windows:
                     chmod(self, wrapper_path, execute=True)
                 tc.cache_variables[f"CMAKE_AUTO{tool.upper()}_EXECUTABLE"] = wrapper_path
+        tc.cache_variables["QT_STATIC"] = not self.dependencies["qt"].options.shared
         tc.generate()
 
     def build(self):
@@ -73,6 +74,9 @@ Prefix = {path}""")
             copy(self, "qt.conf", src=self.generators_folder, dst=os.path.join(self.cpp.build.bindirs[0]))
             bin_path = os.path.join(self.cpp.build.bindirs[0], "test_package")
             self.run(bin_path, env="conanrun")
+            if self.settings.os in ["Windows", "Macos"]:
+                bin_plugin_path = os.path.join(self.cpp.build.bindirs[0], "test_platform_plugin")
+                self.run(bin_plugin_path, env="conanrun")
             # Related to https://github.com/conan-io/conan-center-index/issues/20574
             if self.settings.os == "Macos":
                 bin_macos_path = os.path.join(self.cpp.build.bindirs[0], "test_macos_bundle.app", "Contents", "MacOS", "test_macos_bundle")
